@@ -11,7 +11,8 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.sayHello",
+        "onCommand:vs-code-blackduck.login"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -24,7 +25,7 @@
                 "command": "vs-code-blackduck.login",
                 "title": "Black Duck Login",
                 "description": "Login to Black Duck",
-                "icon" : {
+                "icon": {
                     "light": "images/light/login.svg",
                     "dark": "images/dark/login.svg"
                 }
@@ -72,5 +73,9 @@
         "vscode": "^1.1.5",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "request": "^2.83.0",
+        "request-promise": "^4.2.2"
     }
 }
