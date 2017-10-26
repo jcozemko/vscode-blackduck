@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import request = require('request-promise');
 import tough = require('tough-cookie');
+import { findDependencies } from './findDependencies';
 
 
 let cookiejar = request.jar();
@@ -11,17 +12,19 @@ export interface Response {
 }
 
 export async function blackDuckLogin():  Promise<{ hubUrl: string, username: string, password: string, response: Object }> {
-
-    const hubUrl: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Hub Url' });
-    if (hubUrl) {
-        const username: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Username' });
-        if (username) {
-            const password: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Password', password: true });
-            if (password) {
-                _response = await login(hubUrl, username, password);
-                if (_response) {
-                    console.log("Success", _response);
-                    return { hubUrl: hubUrl, username: username, password: password, response: <string>_response.response };
+    if (!_response) {
+        const hubUrl: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Hub Url' });
+        if (hubUrl) {
+            const username: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Username' });
+            if (username) {
+                const password: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Password', password: true });
+                if (password) {
+                    _response = await login(hubUrl, username, password);
+                    if (_response) {
+                        console.log("Success", _response);
+                        await findDependencies();
+                        return { hubUrl: hubUrl, username: username, password: password, response: <string>_response.response };
+                    }
                 }
             }
         }
