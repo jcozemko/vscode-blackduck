@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import request = require('request-promise');
+import tough = require('tough-cookie');
 
+
+let cookiejar = request.jar();
 let _response: Response;
-
 
 export interface Response {
     response: Object;
@@ -28,7 +30,6 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
     return;
 }
 
-
 async function login(hubUrl: string, username: string, password: string) : Promise<Response> {
     let r: Response;
 
@@ -42,7 +43,8 @@ async function login(hubUrl: string, username: string, password: string) : Promi
         resolveWithFullResponse: true,
         headers: {
             'content-type': 'application/x-www-form-urlencoded'
-        }
+        },
+        jar: cookiejar
     };
 
     try {
