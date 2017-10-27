@@ -75,8 +75,11 @@
         "@types/mocha": "^2.2.42"
     },
     "dependencies": {
+        "express": "^4.16.2",
+        "gulp": "^3.9.1",
         "request": "^2.83.0",
         "request-promise": "^4.2.2",
+        "shell-quote": "^1.6.1",
         "tough-cookie": "^2.3.3"
     }
 }

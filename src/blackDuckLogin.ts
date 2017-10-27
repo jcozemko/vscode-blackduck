@@ -4,9 +4,8 @@ import tough = require('tough-cookie');
 import { findDependencies } from './findDependencies';
 
 
-let cookiejar = request.jar();
+export let cookiejar = request.jar();
 let _response: Response;
-
 export interface Response {
     response: Object;
 }
@@ -22,7 +21,7 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                     _response = await login(hubUrl, username, password);
                     if (_response) {
                         console.log("Success", _response);
-                        await findDependencies();
+                        await findDependencies(hubUrl, username, password);
                         return { hubUrl: hubUrl, username: username, password: password, response: <string>_response.response };
                     }
                 }
