@@ -6,6 +6,7 @@ import { findDependencies } from './findDependencies';
 
 export let cookiejar = request.jar();
 let _response: Response;
+
 export interface Response {
     response: Object;
 }
@@ -22,7 +23,12 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                     if (_response) {
                         console.log("Success", _response);
                         await findDependencies(hubUrl, username, password);
-                        return { hubUrl: hubUrl, username: username, password: password, response: <string>_response.response };
+                        return { 
+                            hubUrl: hubUrl, 
+                            username: username, 
+                            password: password, 
+                            response: <string>_response.response 
+                        };
                     }
                 }
             }
