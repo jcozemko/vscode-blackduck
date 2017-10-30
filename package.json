@@ -12,15 +12,12 @@
     ],
     "activationEvents": [
         "onCommand:extension.sayHello",
-        "onCommand:vs-code-blackduck.login"
+        "onCommand:vs-code-blackduck.login",
+        "onView:blackDuckExplorer"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
-            {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            },
             {
                 "command": "vs-code-blackduck.login",
                 "title": "Black Duck Login",
@@ -28,6 +25,14 @@
                 "icon": {
                     "light": "images/light/login.svg",
                     "dark": "images/dark/login.svg"
+                }
+            },
+            {
+                "command": "blackDuckExplorer.refresh",
+                "title": "Refresh Vulns",
+                "icon": {
+                    "light": "images/light/refresh.svg",
+                    "dark": "images/dark/refresh.svg"
                 }
             }
         ],
@@ -48,6 +53,11 @@
                     "command": "vs-code-blackduck.login",
                     "when": "view == blackDuckExplorer",
                     "group": "navigation"
+                },
+                {
+                    "command": "blackDuckExplorer.refresh",
+                    "when": "view == blackDuckExplorer",
+                    "group": "navigation@2"
                 }
             ]
         },

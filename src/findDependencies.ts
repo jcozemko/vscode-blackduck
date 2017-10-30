@@ -4,28 +4,11 @@ import { blackDuckLogin } from './blackDuckLogin';
 import { cookiejar } from './blackDuckLogin';
 
 let _dependencies: Dependency;
-// export interface Dependencies {
-//     component?: string,
-//     componentVersion?: string,
-//     vulnName?: string,
-//     vulnSource?: string,
-//     vulnSeverity?: string
-// }
+let allDependencies = [];
 
-// export interface Component {
-//     component: Object
-// }
+let item = [];
 
-// enum Dependencies {
-//     component,
-//     componentVersion,
-//     vulnName,
-//     vulnSource,
-//     vulnSeverity
-// }
-
-
-class Dependency {
+export class Dependency {
 
     component?: string;
     componentVersion?: string;
@@ -35,12 +18,15 @@ class Dependency {
 
 
     constructor(component:string, componentVersion: string, vulnName: string, vulnSource: string, vulnSeverity: string) {
+
         this.component = component;
         this.componentVersion = componentVersion;
-        this.vulnName=  vulnName;
+        this.vulnName =  vulnName;
         this.vulnSource = vulnSource;
         this.vulnSeverity = vulnSeverity;
     }
+
+    
 
 }
 
@@ -51,7 +37,6 @@ export async function findDependencies(hubUrl: string, username: string, passwor
     if (jsonFile.dependencies) {
         const dependenciesFromFile = jsonFile.dependencies;
 
-        let allDependencies = [];
 
         try {
             let fileDependencies = Object.keys(dependenciesFromFile);
@@ -64,8 +49,10 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                 let version = dependencyObj.version;
 
                 let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version);
-                count++
+                count++;
                 
+                console.log(count);
+
                 if (foundComponent) {
                     await allDependencies.push(
                         foundComponent
@@ -179,3 +166,60 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
 /*
 Tree of returned vulnerable dependencies
 */
+
+export async function test(allDependencies: any) {
+    console.log("array: ", allDependencies)
+}
+
+
+
+
+
+
+export class DependencyNodeProvider implements vscode.TreeDataProvider<DependencyItem> {
+    
+        public _onDidChangeTreeData: vscode.EventEmitter<DependencyItem | undefined> = new vscode.EventEmitter<DependencyItem | undefined>();
+        public onDidChangeTreeData: vscode.Event<DependencyItem | undefined> = this._onDidChangeTreeData.event;
+        
+    
+    
+        refresh(): void {
+            this._onDidChangeTreeData.fire();
+        }
+
+        getTreeItem(element: DependencyItem): vscode.TreeItem {
+            return element;
+        }
+    
+        getChildren(element?: DependencyItem): Thenable<DependencyItem[]> {
+            return new Promise(resolve => {
+                if (!element) {
+
+                    let vulns = allDependencies.map(vuln => new DependencyItem(vuln.component + " " + vuln.componentVersion, vscode.TreeItemCollapsibleState.Collapsed, {
+                        title: vuln.component + vuln.componentVersion,
+                        command:''
+                    }));
+          
+                    console.log("vulns: ", vulns);
+                    resolve(vulns);
+                } else {
+                  resolve([]);
+                }
+              });
+            }
+
+}
+
+
+export class DependencyItem extends vscode.TreeItem {
+    
+        constructor(
+            public readonly label: string,
+            public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+            public readonly command?: vscode.Command
+        ) {
+            super(label, collapsibleState);
+        }
+    
+}
+
