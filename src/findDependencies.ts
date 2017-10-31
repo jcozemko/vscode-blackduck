@@ -6,27 +6,19 @@ import { cookiejar } from './blackDuckLogin';
 let _dependencies: Dependency;
 let allDependencies = [];
 
-let item = [];
 
 export class Dependency {
 
     component?: string;
     componentVersion?: string;
-    vulnName?: string;
-    vulnSource?: string;
-    vulnSeverity?: string
+    vulnerabilities?: Array<Object>
 
 
-    constructor(component:string, componentVersion: string, vulnName: string, vulnSource: string, vulnSeverity: string) {
-
+    constructor(component:string, componentVersion: string, vulnerabilities: Array<Object>) {
         this.component = component;
         this.componentVersion = componentVersion;
-        this.vulnName =  vulnName;
-        this.vulnSource = vulnSource;
-        this.vulnSeverity = vulnSeverity;
+        this.vulnerabilities = vulnerabilities;
     }
-
-    
 
 }
 
@@ -145,13 +137,22 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
             let vulnSource: string;
             let vulnSeverity: string;
 
+            let vulnerabilitiesArray = [];
+            let vulnObj = {
+                vulnName,
+                vulnSource,
+                vulnSeverity
+            };
+
             for (let i = 0; i < vulnerabilities.items.length; i++) {
-                vulnName = vulnerabilities.items[i].vulnerabilityName;
-                vulnSource = vulnerabilities.items[i].source;
-                vulnSeverity = vulnerabilities.items[i].severity;
+                vulnObj.vulnName = vulnerabilities.items[i].vulnerabilityName;
+                vulnObj.vulnSource = vulnerabilities.items[i].source;
+                vulnObj.vulnSeverity = vulnerabilities.items[i].severity;
+                vulnerabilitiesArray.push(vulnObj);
             }
 
-            let d = new Dependency(componentName, componentVersion, vulnName, vulnSource, vulnSeverity);
+            let d = new Dependency(componentName, componentVersion, vulnerabilitiesArray);
+
             return d;
         }
     } catch (error) {
@@ -167,48 +168,141 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
 Tree of returned vulnerable dependencies
 */
 
-export async function test(allDependencies: any) {
-    console.log("array: ", allDependencies)
-}
 
-
-
-
-
-
-export class DependencyNodeProvider implements vscode.TreeDataProvider<DependencyItem> {
-    
-        public _onDidChangeTreeData: vscode.EventEmitter<DependencyItem | undefined> = new vscode.EventEmitter<DependencyItem | undefined>();
-        public onDidChangeTreeData: vscode.Event<DependencyItem | undefined> = this._onDidChangeTreeData.event;
+export class DependencyNodeProvider implements vscode.TreeDataProvider<NodeBase> {
         
-    
-    
-        refresh(): void {
-            this._onDidChangeTreeData.fire();
-        }
+    private _onDidChangeTreeData: vscode.EventEmitter<NodeBase> = new vscode.EventEmitter<NodeBase>();
+    readonly onDidChangeTreeData: vscode.Event<NodeBase> = this._onDidChangeTreeData.event;
 
-        getTreeItem(element: DependencyItem): vscode.TreeItem {
-            return element;
-        }
+    private _componentsNode: RootNode;
     
-        getChildren(element?: DependencyItem): Thenable<DependencyItem[]> {
-            return new Promise(resolve => {
-                if (!element) {
+    refresh(): void {
+        this._onDidChangeTreeData.fire(this._componentsNode);
+    }
 
-                    let vulns = allDependencies.map(vuln => new DependencyItem(vuln.component + " " + vuln.componentVersion, vscode.TreeItemCollapsibleState.Collapsed, {
-                        title: vuln.component + vuln.componentVersion,
-                        command:''
-                    }));
-          
-                    console.log("vulns: ", vulns);
-                    resolve(vulns);
-                } else {
-                  resolve([]);
-                }
-              });
-            }
+    getTreeItem(element: NodeBase): vscode.TreeItem {            
+        return element.getTreeItem();
+    }
+    
+    async getChildren(element?: NodeBase): Promise<NodeBase[]> {
+        if (!element) {
+            return this.getRootNodes();
+        }
+        return element.getChildren(element);
+    }
+
+    private async getRootNodes(): Promise<RootNode[]> {
+        const rootNodes: RootNode[] = [];
+        let node: RootNode;
+
+        node = new RootNode('Vulnerable Components', 'componentRootNode', this._onDidChangeTreeData);
+        this._componentsNode = node;
+
+        rootNodes.push(node);
+
+        return rootNodes;
+    }
 
 }
+
+export class NodeBase {
+    readonly label: string;
+
+    protected constructor(label: string) {
+        this.label = label;
+    }
+
+    getTreeItem(): vscode.TreeItem {
+        return {
+            label: this.label,
+            collapsibleState: vscode.TreeItemCollapsibleState.None
+        };
+    }
+
+    async getChildren(element): Promise<NodeBase[]> {
+        return []
+    }
+
+}
+
+
+export class RootNode extends NodeBase {
+
+    private _componentNode: RootNode;
+
+    constructor (
+        public readonly label: string,
+        public readonly contextValue: string,
+        public eventEmitter: vscode.EventEmitter<NodeBase>
+    ) {
+        super(label)
+    }
+
+    getTreeItem(): vscode.TreeItem {
+        return {
+            label: this.label,
+            collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+            contextValue: this.contextValue
+        }
+    }
+
+    async getChildren(element): Promise<NodeBase[]> {
+        if (element.contextValue === 'componentRootNode') {
+            return this.getComponents();
+        }
+    }
+
+    private async getComponents(): Promise<ComponentNode[]> {
+
+        const componentNodes: ComponentNode[] = [];
+
+        for (let i = 0; i < allDependencies.length; i++) {
+            let node = new ComponentNode(allDependencies[i].component + " " + allDependencies[i].componentVersion , "componentRootNode", this.eventEmitter);
+            componentNodes.push(node);
+        }
+
+
+        console.log("Vuln nodes: ", componentNodes);
+
+        return componentNodes;
+    }
+
+}
+
+export class ComponentNode extends NodeBase {
+
+    constructor(
+        public readonly label: string,
+        public readonly contextValue: string,
+        public readonly eventEmitter: vscode.EventEmitter<NodeBase>
+    ) {
+        super(label)
+    }
+
+
+
+    getTreeItem(): vscode.TreeItem {
+        return {
+            label: this.label,
+            collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
+            contextValue: "componentRootNode"
+        }
+    }
+
+    // async getChildren(element: ComponentNode): Promise<VulnerabilityNode[]> {
+    //     const vulnerabilityNodes: VulnerabilityNode[] = [];
+    //     let node: VulnerabilityNode;
+
+    //     for (let i = 0; i < allDependencies)
+    // }
+
+
+}
+
+
+
+
+
 
 
 export class DependencyItem extends vscode.TreeItem {
@@ -222,4 +316,3 @@ export class DependencyItem extends vscode.TreeItem {
         }
     
 }
-
