@@ -3,7 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { blackDuckLogin } from './blackDuckLogin';
-import { DependencyNodeProvider } from './findDependencies';
+import { DependencyNodeProvider } from './dependencyExplorer';
 
 
 
