@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { NodeBase } from './nodeBase';
 import { allDependencies } from '../findDependencies';
 import { ComponentNode } from './componentNode';
@@ -19,7 +20,8 @@ export class RootNode extends NodeBase {
             return {
                 label: this.label,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                contextValue: this.contextValue
+                contextValue: this.contextValue,
+                iconPath: path.join(__filename, '..', '..', '..', 'images', 'light', 'component.svg' )
             }
         }
     
@@ -37,7 +39,7 @@ export class RootNode extends NodeBase {
                 let node = new ComponentNode(allDependencies[i].component + " " + allDependencies[i].componentVersion , "componentRootNode", this.eventEmitter, allDependencies[i].component);
                 componentNodes.push(node);
             }
-    
+            console.log(componentNodes);
             return componentNodes;
         }
     

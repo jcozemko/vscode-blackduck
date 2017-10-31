@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { NodeBase } from './nodeBase';
 import { VulnerabilityNode } from './vulnerabilityNode';
 import { allDependencies } from '../findDependencies';
@@ -19,7 +20,8 @@ export class ComponentNode extends NodeBase {
             return {
                 label: this.label,
                 collapsibleState: vscode.TreeItemCollapsibleState.Collapsed,
-                contextValue: "componentRootNode"
+                contextValue: "componentRootNode",
+                iconPath: path.join(__filename, '..', '..', '..', 'images', 'light', 'vulnerability.svg' )
             }
         }
     
@@ -31,8 +33,8 @@ export class ComponentNode extends NodeBase {
                 if (this.component == allDependencies[i].component) {
                     for (let j = 0; j < allDependencies[i].vulnerabilities.length; j++) {
                         console.log(allDependencies[i].vulnerabilities[j].vulnName)
-                        let node = new VulnerabilityNode(allDependencies[i].vulnerabilities[j].vulnName, "vulnNode");
-                        vulnerabilityNodes.push(node);               
+                        let node = new VulnerabilityNode(allDependencies[i].vulnerabilities[j].vulnSource + "-" + allDependencies[i].vulnerabilities[j].vulnName, "vulnNode");
+                        vulnerabilityNodes.push(node);
                     }
                 }
     
