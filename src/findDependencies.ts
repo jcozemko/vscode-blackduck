@@ -4,7 +4,7 @@ import { blackDuckLogin } from './blackDuckLogin';
 import { cookiejar } from './blackDuckLogin';
 import { NodeBase } from './models/nodeBase';
 import { RootNode } from './models/rootNode';
-
+import { DependencyNodeProvider } from './dependencyExplorer';
 
 let _dependencies: Dependency;
 export let allDependencies = [];
@@ -56,6 +56,8 @@ export async function findDependencies(hubUrl: string, username: string, passwor
 
                 if (count > size - 1 ) {
                     console.log("All: ", allDependencies);
+                    let dependencyTree = new DependencyNodeProvider;
+                    dependencyTree.refresh();
                     return allDependencies;
                 }
 
