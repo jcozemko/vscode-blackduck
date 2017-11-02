@@ -19,7 +19,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.subscriptions.push(vscode.commands.registerCommand('vs-code-blackduck.login', blackDuckLogin));
 
     let dependencyNodeProvider = new DependencyNodeProvider();
-    vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyNodeProvider);              
+    //vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyNodeProvider);              
     vscode.commands.registerCommand('blackDuckExplorer.refresh', () => dependencyNodeProvider.refresh());
     
 

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { NodeBase } from './models/nodeBase';
 import { RootNode } from './models/rootNode';
+import { findDependencies } from './findDependencies';
 
 export class DependencyNodeProvider implements vscode.TreeDataProvider<NodeBase> {
     

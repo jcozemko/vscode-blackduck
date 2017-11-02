@@ -39,7 +39,7 @@ export class RootNode extends NodeBase {
                 let node = new ComponentNode(allDependencies[i].component + " " + allDependencies[i].componentVersion , "componentRootNode", this.eventEmitter, allDependencies[i].component);
                 componentNodes.push(node);
             }
-            console.log(componentNodes);
+            console.log("Root Node File: ", componentNodes);
             return componentNodes;
         }
     

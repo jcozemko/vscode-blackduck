@@ -48,6 +48,9 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                 
                 console.log(count);
 
+
+
+
                 if (foundComponent) {
                     await allDependencies.push(
                         foundComponent
@@ -56,7 +59,8 @@ export async function findDependencies(hubUrl: string, username: string, passwor
 
                 if (count > size - 1 ) {
                     console.log("All: ", allDependencies);
-                    let dependencyTree = new DependencyNodeProvider;
+                    let dependencyTree = new DependencyNodeProvider();
+                    vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyTree);                                  
                     dependencyTree.refresh();
                     return allDependencies;
                 }

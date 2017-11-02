@@ -12,8 +12,7 @@
     ],
     "activationEvents": [
         "onCommand:extension.sayHello",
-        "onCommand:vs-code-blackduck.login",
-        "onView:blackDuckExplorer"
+        "onCommand:vs-code-blackduck.login"
     ],
     "main": "./out/extension",
     "contributes": {
