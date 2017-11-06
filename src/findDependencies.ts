@@ -39,6 +39,9 @@ export async function findDependencies(hubUrl: string, username: string, passwor
             console.log(size);
             let count = 0;
 
+           
+
+
             await Object.keys(dependenciesFromFile).forEach(async dependency => {
                 let dependencyObj = dependenciesFromFile[dependency];
                 let version = dependencyObj.version;
@@ -57,15 +60,24 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                     )
                 }
 
+                vscode.window.withProgress({title: "black-duck", location: vscode.ProgressLocation.Window}, async progress => {
+                    progress.report({message: `Finding dependencies`});
+                
+                    
+
                 if (count > size - 1 ) {
                     console.log("All: ", allDependencies);
                     let dependencyTree = new DependencyNodeProvider();
                     vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyTree);                                  
                     dependencyTree.refresh();
+                    console.log("done progress");                    
                     return allDependencies;
                 }
-
             });
+            });
+
+
+
             
         } catch (error) {
             console.log(error);
@@ -143,18 +155,21 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
             let vulnName: string;
             let vulnSource: string;
             let vulnSeverity: string;
+            let vulnHubLink: string;
 
             let vulnerabilitiesArray = [];
             let vulnObj = {
                 vulnName,
                 vulnSource,
-                vulnSeverity
+                vulnSeverity,
+                vulnHubLink
             };
 
             for (let i = 0; i < vulnerabilities.items.length; i++) {
                 vulnObj.vulnName = vulnerabilities.items[i].vulnerabilityName;
                 vulnObj.vulnSource = vulnerabilities.items[i].source;
                 vulnObj.vulnSeverity = vulnerabilities.items[i].severity;
+                vulnObj.vulnHubLink = vulnerabilities.items[i]._meta.href;
                 vulnerabilitiesArray.push(vulnObj);
             }
 
