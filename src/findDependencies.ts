@@ -36,47 +36,39 @@ export async function findDependencies(hubUrl: string, username: string, passwor
         try {
             let fileDependencies = Object.keys(dependenciesFromFile);
             let size = fileDependencies.length;
-            console.log(size);
             let count = 0;
 
-           
 
+            const statusBarItem = vscode.window.createStatusBarItem();
+            statusBarItem.text = 'Parsing JSON..';
+            statusBarItem.show();
 
-            await Object.keys(dependenciesFromFile).forEach(async dependency => {
-                let dependencyObj = dependenciesFromFile[dependency];
-                let version = dependencyObj.version;
-
-                let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version);
-                count++;
-                
-                console.log(count);
-
-
-
-
-                if (foundComponent) {
-                    await allDependencies.push(
-                        foundComponent
-                    )
-                }
-
-                vscode.window.withProgress({title: "black-duck", location: vscode.ProgressLocation.Window}, async progress => {
-                    progress.report({message: `Finding dependencies`});
-                
+            async function parseJson(count, dependenciesFromFile) {
+                await Object.keys(dependenciesFromFile).forEach(async dependency => {
+                    let dependencyObj = dependenciesFromFile[dependency];
+                    let version = dependencyObj.version;
+    
+                    let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version);
+                    count++;
                     
+    
+                    if (foundComponent) {
+                        await allDependencies.push(
+                            foundComponent
+                        )
+                    }       
+                        
+                    if (count > size - 1 ) {
+                        let dependencyTree = new DependencyNodeProvider();
+                        vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyTree);                                  
+                        dependencyTree.refresh();
+                        statusBarItem.text = 'Done parsing.';                        
+                        return allDependencies;
+                    } 
+                });
+            }
 
-                if (count > size - 1 ) {
-                    console.log("All: ", allDependencies);
-                    let dependencyTree = new DependencyNodeProvider();
-                    vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyTree);                                  
-                    dependencyTree.refresh();
-                    console.log("done progress");                    
-                    return allDependencies;
-                }
-            });
-            });
-
-
+            parseJson(count, dependenciesFromFile);
 
             
         } catch (error) {

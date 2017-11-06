@@ -19,22 +19,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     console.log('Congratulations, your extension "blackduck" is now active!');
 
-
     vscode.commands.registerCommand('blackDuckExplorer.login', () => blackDuckLogin());
     context.subscriptions.push(vscode.commands.registerCommand('vs-code-blackduck.login', blackDuckLogin));
 
-    context.subscriptions.push(vscode.commands.registerCommand('vs-code-blackduck.browseVulnInHub', async(hubContext?: VulnerabilityNode) => {
+    context.subscriptions.push(vscode.commands.registerCommand('vs-code-blackduck.browseVulnInHub', async (hubContext?: VulnerabilityNode) => {
         browseVulnInHub(hubContext);
     }))
 
     let dependencyNodeProvider = new DependencyNodeProvider();
     //vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyNodeProvider);              
     vscode.commands.registerCommand('blackDuckExplorer.refresh', () => dependencyNodeProvider.refresh());
-    
-
-
 
 }
+
+
 
 // this method is called when your extension is deactivated
 export function deactivate() {

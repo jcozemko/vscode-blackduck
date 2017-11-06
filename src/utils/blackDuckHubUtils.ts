@@ -13,5 +13,3 @@ export function browseVulnInHub(hubContext: VulnerabilityNode) {
         opn(url);
     }
 }
-
-
