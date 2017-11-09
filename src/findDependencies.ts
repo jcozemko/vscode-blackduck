@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
 import request = require('request-promise');
+import path = require('path');
+import fs = require('fs');
+import gemfile = require('gemfile');
 import { blackDuckLogin } from './blackDuckLogin';
 import { cookiejar } from './blackDuckLogin';
 import { NodeBase } from './models/nodeBase';
@@ -28,10 +31,29 @@ export class Dependency {
 
 export async function findDependencies(hubUrl: string, username: string, password: string) : Promise<void> {
     const jsonFile = require('../package-lock');
-    
-    if (jsonFile.dependencies) {
-        const dependenciesFromFile = jsonFile.dependencies;
 
+    let GemlockFile = fs.readFileSync(path.join(__dirname, '..', 'Gemfile.lock'), 'utf8');
+
+
+    let testruby = gemfile.interpret(GemlockFile);
+    console.log("Ruby: ", testruby.GEM.specs);
+
+
+    await Object.keys(testruby.GEM.specs).forEach(async dependency => {
+        let dependencyObj = testruby.GEM.specs[dependency];
+        let version = dependencyObj.version;
+
+        console.log(dependency);
+        console.log(version);
+    });
+
+
+
+
+
+
+    if (jsonFile.dependencies) {
+        const dependenciesFromFile = testruby.GEM.specs;
 
         allDependencies = [];
 
@@ -49,6 +71,9 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                 await Object.keys(dependenciesFromFile).forEach(async dependency => {
                     let dependencyObj = dependenciesFromFile[dependency];
                     let version = dependencyObj.version;
+
+                    console.log(dependency);
+                    console.log(version);
     
                     let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version);
                     count++;
@@ -93,7 +118,7 @@ async function searchForComponent(hubUrl: string, username: string, password: st
 
     let options = {
         method: 'GET',
-        uri: hubUrl + ':443/api/components?q=npmjs:' + componentName + '/' + componentVersion,
+        uri: hubUrl + ':443/api/components?q=rubygems:' + componentName + '/' + componentVersion,
         form: {
             j_username: username,
             j_password: password
@@ -107,7 +132,9 @@ async function searchForComponent(hubUrl: string, username: string, password: st
 
     try {
         let componentResponse = await request(options);
+        console.log(componentResponse);
         let versionUrl = JSON.parse(JSON.stringify(componentResponse.items[0].version));
+        console.log(versionUrl);
         let d = await getComponentVulnerabilities(versionUrl, username, password, componentName, componentVersion);
         return d;
     } catch (error) {
