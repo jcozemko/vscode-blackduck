@@ -33,6 +33,8 @@ export async function findDependencies(hubUrl: string, username: string, passwor
         const dependenciesFromFile = jsonFile.dependencies;
 
 
+        allDependencies = [];
+
         try {
             let fileDependencies = Object.keys(dependenciesFromFile);
             let size = fileDependencies.length;
@@ -61,8 +63,7 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                     if (count > size - 1 ) {
                         let dependencyTree = new DependencyNodeProvider();
                         vscode.window.registerTreeDataProvider('blackDuckExplorer', dependencyTree);                                  
-                        dependencyTree.refresh();
-                        statusBarItem.text = 'Done parsing.';                        
+                        statusBarItem.text = 'Done parsing.';
                         return allDependencies;
                     } 
                 });

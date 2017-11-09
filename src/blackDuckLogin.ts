@@ -12,6 +12,14 @@ export interface Response {
     response: Object;
 }
 
+
+export let loginObject = {
+    huburl: <string> null,
+    username: <string> null,
+    password: <string> null
+};
+
+
 export async function blackDuckLogin():  Promise<{ hubUrl: string, username: string, password: string, response: Object }> {
     if (!_response) {
         const hubUrl: string = await vscode.window.showInputBox({ ignoreFocusOut: true, prompt: 'Hub Url' });
@@ -24,6 +32,11 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                     if (_response) {
                         console.log("Success", _response);
                         await findDependencies(hubUrl, username, password);
+
+                        loginObject.huburl = hubUrl;
+                        loginObject.username = username;
+                        loginObject.password = password;
+
                         return { 
                             hubUrl: hubUrl, 
                             username: username, 
