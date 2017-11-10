@@ -29,31 +29,12 @@ export class Dependency {
 }
 
 
-export async function findDependencies(hubUrl: string, username: string, password: string) : Promise<void> {
+export async function findDependencies(hubUrl: string, username: string, password: string, packageManagerConfiguration: string) : Promise<void> {
+    
     const jsonFile = require('../package-lock');
 
-    let GemlockFile = fs.readFileSync(path.join(__dirname, '..', 'Gemfile.lock'), 'utf8');
-
-
-    let testruby = gemfile.interpret(GemlockFile);
-    console.log("Ruby: ", testruby.GEM.specs);
-
-
-    await Object.keys(testruby.GEM.specs).forEach(async dependency => {
-        let dependencyObj = testruby.GEM.specs[dependency];
-        let version = dependencyObj.version;
-
-        console.log(dependency);
-        console.log(version);
-    });
-
-
-
-
-
-
     if (jsonFile.dependencies) {
-        const dependenciesFromFile = testruby.GEM.specs;
+        const dependenciesFromFile = jsonFile.dependencies;
 
         allDependencies = [];
 
@@ -71,11 +52,8 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                 await Object.keys(dependenciesFromFile).forEach(async dependency => {
                     let dependencyObj = dependenciesFromFile[dependency];
                     let version = dependencyObj.version;
-
-                    console.log(dependency);
-                    console.log(version);
     
-                    let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version);
+                    let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version, packageManagerConfiguration);
                     count++;
                     
     
@@ -110,15 +88,24 @@ export async function findDependencies(hubUrl: string, username: string, passwor
 Search for component based on name and version from parsed json file
 */
 
-async function searchForComponent(hubUrl: string, username: string, password: string, componentName: string, componentVersion: string) : Promise<Dependency> {
+async function searchForComponent(hubUrl: string, username: string, password: string, componentName: string, componentVersion: string, packageManagerConfiguration: string) : Promise<Dependency> {
 
     let versionUrl;
-
     let d: Dependency;
+    let apiLanguageConfig: string;
+
+    if (packageManagerConfiguration == "package-lock.json") {
+        apiLanguageConfig = "npmjs:";
+    } else if (packageManagerConfiguration == "Gemfile.lock") {
+        apiLanguageConfig = "rubygems:";
+    } else {
+        apiLanguageConfig = "";
+    }
+
 
     let options = {
         method: 'GET',
-        uri: hubUrl + ':443/api/components?q=rubygems:' + componentName + '/' + componentVersion,
+        uri: hubUrl + ':443/api/components?q=' + apiLanguageConfig + componentName + '/' + componentVersion,
         form: {
             j_username: username,
             j_password: password
@@ -132,9 +119,7 @@ async function searchForComponent(hubUrl: string, username: string, password: st
 
     try {
         let componentResponse = await request(options);
-        console.log(componentResponse);
         let versionUrl = JSON.parse(JSON.stringify(componentResponse.items[0].version));
-        console.log(versionUrl);
         let d = await getComponentVulnerabilities(versionUrl, username, password, componentName, componentVersion);
         return d;
     } catch (error) {
