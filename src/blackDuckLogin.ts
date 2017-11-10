@@ -4,6 +4,8 @@ import tough = require('tough-cookie');
 import path = require('path');
 import fs = require('fs');
 import { findDependencies } from './findDependencies';
+import { sep } from 'path';
+import { networkInterfaces } from 'os';
 
 
 
@@ -36,6 +38,7 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                         const packageManagerConfig: any = await checkForFiles();
                         if (packageManagerConfig) {
                             await findDependencies(hubUrl, username, password, packageManagerConfig);
+                            console.log(packageManagerConfig);
                         }
 
                         loginObject.huburl = hubUrl;
@@ -96,7 +99,8 @@ async function fileExists(filePath) {
 
 async function checkForFiles() {
 
-    const packageManagerFiles: string[] = ["package-lock.json", "Gemfile.lock"];
+    //package-lock.json intentionally named incorrectly for testing
+    const packageManagerFiles: string[] = ["package-lockk.json", "Gemfile.lock", "setup.py"];
 
     for (let i = 0; i < packageManagerFiles.length; i++) {
         try {

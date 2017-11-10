@@ -31,10 +31,48 @@ export class Dependency {
 
 export async function findDependencies(hubUrl: string, username: string, password: string, packageManagerConfiguration: string) : Promise<void> {
     
-    const jsonFile = require('../package-lock');
+    let fileToParse;
+    let apiLanguageConfig: string;
+    let declaredDependencies: any;
+    
+    switch (packageManagerConfiguration) {
+        case 'package-lock.json':
+            apiLanguageConfig = "npmjs:";
+            fileToParse = require('../package-lock');
+            declaredDependencies = fileToParse.dependencies;
+            break;
+        case 'Gemfile.lock':
+            apiLanguageConfig = "rubygems:";
+            let GemLockFile = fs.readFileSync(path.join(__dirname, '..', 'Gemfile.lock'), 'utf8');
+            let interpretedGemLockFile = gemfile.interpret(GemLockFile);
+            console.log(interpretedGemLockFile);
+            fileToParse = interpretedGemLockFile;
+            declaredDependencies = fileToParse.GEM.specs;
+            break;
+        case 'setup.py':
+            apiLanguageConfig = "pypi:";
+            let setupPyFile = fs.readFileSync(path.join(__dirname, '..', 'setup.py'), 'utf8').replace(/\s|'/g,'');
+            let installReqString = "install_requires=";
+            let requirementsIndex = setupPyFile.indexOf(installReqString, 0);
+            let nextOpeningBracket = setupPyFile.indexOf('[', requirementsIndex);
+            let nextClosingBracketIndex = setupPyFile.indexOf(']', requirementsIndex);
+            let totalString = setupPyFile.slice(nextOpeningBracket + 1, nextClosingBracketIndex);
+            let finalPythonString = totalString.replace(/==|>|=|</g,'-');      
+            let pythonArray = finalPythonString.split(',');           
+            let pythonDependenciesObj = {}
+            
+            for (let i = 0; i < pythonArray.length; i++) {
+                pythonDependenciesObj[pythonArray[i].slice(0, pythonArray[i].indexOf('-'))] = {version: pythonArray[i].slice(pythonArray[i].lastIndexOf('-') + 1)}
+            }
+            declaredDependencies = pythonDependenciesObj;
+            break;
+        default:
+            apiLanguageConfig = "";
+    }
 
-    if (jsonFile.dependencies) {
-        const dependenciesFromFile = jsonFile.dependencies;
+
+    if (declaredDependencies) {
+        const dependenciesFromFile = declaredDependencies;
 
         allDependencies = [];
 
@@ -53,7 +91,7 @@ export async function findDependencies(hubUrl: string, username: string, passwor
                     let dependencyObj = dependenciesFromFile[dependency];
                     let version = dependencyObj.version;
     
-                    let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version, packageManagerConfiguration);
+                    let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version, apiLanguageConfig);
                     count++;
                     
     
@@ -88,19 +126,10 @@ export async function findDependencies(hubUrl: string, username: string, passwor
 Search for component based on name and version from parsed json file
 */
 
-async function searchForComponent(hubUrl: string, username: string, password: string, componentName: string, componentVersion: string, packageManagerConfiguration: string) : Promise<Dependency> {
+async function searchForComponent(hubUrl: string, username: string, password: string, componentName: string, componentVersion: string, apiLanguageConfig: string) : Promise<Dependency> {
 
     let versionUrl;
     let d: Dependency;
-    let apiLanguageConfig: string;
-
-    if (packageManagerConfiguration == "package-lock.json") {
-        apiLanguageConfig = "npmjs:";
-    } else if (packageManagerConfiguration == "Gemfile.lock") {
-        apiLanguageConfig = "rubygems:";
-    } else {
-        apiLanguageConfig = "";
-    }
 
 
     let options = {
