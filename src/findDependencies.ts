@@ -52,13 +52,11 @@ export async function findDependencies(hubUrl: string, username: string, passwor
         case 'setup.py':
             apiLanguageConfig = "pypi:";
             let setupPyFile = fs.readFileSync(path.join(__dirname, '..', 'setup.py'), 'utf8').replace(/\s|'/g,'');
-            let installReqString = "install_requires=";
-            let requirementsIndex = setupPyFile.indexOf(installReqString, 0);
+            let requirementsIndex = setupPyFile.indexOf('install_requires=', 0);
             let nextOpeningBracket = setupPyFile.indexOf('[', requirementsIndex);
             let nextClosingBracketIndex = setupPyFile.indexOf(']', requirementsIndex);
             let totalString = setupPyFile.slice(nextOpeningBracket + 1, nextClosingBracketIndex);
-            let finalPythonString = totalString.replace(/==|>|=|</g,'-');      
-            let pythonArray = finalPythonString.split(',');           
+            let pythonArray = totalString.replace(/==|>|=|</g,'-').split(',');      
             let pythonDependenciesObj = {}
             
             for (let i = 0; i < pythonArray.length; i++) {
