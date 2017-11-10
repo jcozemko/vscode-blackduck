@@ -102,6 +102,8 @@
     },
     "dependencies": {
         "express": "^4.16.2",
+        "file-system": "^2.2.2",
+        "gemfile": "^1.0.0",
         "gulp": "^3.9.1",
         "opn": "^5.1.0",
         "request": "^2.83.0",

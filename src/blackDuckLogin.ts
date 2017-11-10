@@ -1,7 +1,11 @@
 import * as vscode from 'vscode';
 import request = require('request-promise');
 import tough = require('tough-cookie');
+import path = require('path');
+import fs = require('fs');
 import { findDependencies } from './findDependencies';
+import { sep } from 'path';
+import { networkInterfaces } from 'os';
 
 
 
@@ -16,7 +20,8 @@ export interface Response {
 export let loginObject = {
     huburl: <string> null,
     username: <string> null,
-    password: <string> null
+    password: <string> null,
+    packageManagerConfig: <string> null
 };
 
 
@@ -30,12 +35,16 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                 if (password) {
                     _response = await login(hubUrl, username, password);
                     if (_response) {
-                        console.log("Success", _response);
-                        await findDependencies(hubUrl, username, password);
+                        const packageManagerConfig: any = await checkForFiles();
+                        if (packageManagerConfig) {
+                            await findDependencies(hubUrl, username, password, packageManagerConfig);
+                            console.log(packageManagerConfig);
+                        }
 
                         loginObject.huburl = hubUrl;
                         loginObject.username = username;
                         loginObject.password = password;
+                        loginObject.packageManagerConfig = packageManagerConfig;
 
                         return { 
                             hubUrl: hubUrl, 
@@ -77,4 +86,33 @@ async function login(hubUrl: string, username: string, password: string) : Promi
     }
 
     return r;
+}
+
+async function fileExists(filePath) {
+    try {
+        return fs.statSync(filePath).isFile();
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+
+async function checkForFiles() {
+
+    //package-lock.json intentionally named incorrectly for testing
+    const packageManagerFiles: string[] = ["package-lockk.json", "Gemfile.lock", "setup.py"];
+
+    for (let i = 0; i < packageManagerFiles.length; i++) {
+        try {
+            let fileDoesExist = await fileExists(path.join(__dirname, '..', packageManagerFiles[i]));       
+            if (fileDoesExist) {
+                console.log(packageManagerFiles[i]);
+                return packageManagerFiles[i];
+            }
+        } catch (e) {
+            console.log(e);
+            return false;
+        }
+    }
+
 }

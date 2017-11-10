@@ -14,7 +14,7 @@ private _componentNode: RootNode;
 private _vulnerabilityNode: RootNode;
 
 async refresh(): Promise<void> {
-    findDependencies(loginObject.huburl, loginObject.username, loginObject.password);    
+    findDependencies(loginObject.huburl, loginObject.username, loginObject.password, loginObject.packageManagerConfig);    
     await this._onDidChangeTreeData.fire(this._componentNode);
     await this._onDidChangeTreeData.fire(this._vulnerabilityNode);
 }
