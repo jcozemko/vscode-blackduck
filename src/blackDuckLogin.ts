@@ -35,10 +35,9 @@ export async function blackDuckLogin():  Promise<{ hubUrl: string, username: str
                 if (password) {
                     _response = await login(hubUrl, username, password);
                     if (_response) {
-                        const packageManagerConfig: any = await checkForFiles();
+                        const packageManagerConfig: any = await fileExists();
                         if (packageManagerConfig) {
                             await findDependencies(hubUrl, username, password, packageManagerConfig);
-                            console.log(packageManagerConfig);
                         }
 
                         loginObject.huburl = hubUrl;
@@ -88,31 +87,18 @@ async function login(hubUrl: string, username: string, password: string) : Promi
     return r;
 }
 
-async function fileExists(filePath) {
+async function fileExists() {
     try {
-        return fs.statSync(filePath).isFile();
+        let files = vscode.workspace.findFiles('*{package-lock.json,setup.py,Gemfile.lock}', '', 3);
+        
+        return files.then(files => {
+            let filePath = files[0].fsPath;
+            let fileExtension = files[0].fsPath.slice(files[0].fsPath.lastIndexOf('.'));
+            let fileInfoArray = [filePath, fileExtension];
+            return fileInfoArray;
+        })
     } catch (e) {
         console.log(e);
         return false;
     }
-}
-
-async function checkForFiles() {
-
-    //package-lock.json intentionally named incorrectly for testing
-    const packageManagerFiles: string[] = ["package-lockk.json", "Gemfile.lock", "setup.py"];
-
-    for (let i = 0; i < packageManagerFiles.length; i++) {
-        try {
-            let fileDoesExist = await fileExists(path.join(__dirname, '..', packageManagerFiles[i]));       
-            if (fileDoesExist) {
-                console.log(packageManagerFiles[i]);
-                return packageManagerFiles[i];
-            }
-        } catch (e) {
-            console.log(e);
-            return false;
-        }
-    }
-
 }

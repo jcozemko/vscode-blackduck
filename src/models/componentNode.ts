@@ -29,6 +29,12 @@ export class ComponentNode extends NodeBase {
             const vulnerabilityNodes: VulnerabilityNode[] = [];
             let node: VulnerabilityNode;
     
+
+            /*
+
+            TODO: If multiple vulnerabilies exist, duplicates will occur.
+            */
+
             for (let i = 0; i < allDependencies.length; i++) {
                 if (this.component == allDependencies[i].component) {
                     for (let j = 0; j < allDependencies[i].vulnerabilities.length; j++) {

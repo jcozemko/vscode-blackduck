@@ -29,29 +29,31 @@ export class Dependency {
 }
 
 
-export async function findDependencies(hubUrl: string, username: string, password: string, packageManagerConfiguration: string) : Promise<void> {
-    
+export async function findDependencies(hubUrl: string, username: string, password: string, packageManagerConfiguration: any) : Promise<void> {
+
+    console.log("Inside find dep function: ", packageManagerConfiguration[0]);
+
     let fileToParse;
     let apiLanguageConfig: string;
     let declaredDependencies: any;
     
-    switch (packageManagerConfiguration) {
-        case 'package-lock.json':
+    switch (packageManagerConfiguration[1]) {
+        case '.json':
             apiLanguageConfig = "npmjs:";
-            fileToParse = require('../package-lock');
+            fileToParse = require(packageManagerConfiguration[0]);
             declaredDependencies = fileToParse.dependencies;
             break;
-        case 'Gemfile.lock':
+        case '.lock':
             apiLanguageConfig = "rubygems:";
-            let GemLockFile = fs.readFileSync(path.join(__dirname, '..', 'Gemfile.lock'), 'utf8');
+            let GemLockFile = fs.readFileSync(packageManagerConfiguration[0], 'utf8');
             let interpretedGemLockFile = gemfile.interpret(GemLockFile);
             console.log(interpretedGemLockFile);
             fileToParse = interpretedGemLockFile;
             declaredDependencies = fileToParse.GEM.specs;
             break;
-        case 'setup.py':
+        case '.py':
             apiLanguageConfig = "pypi:";
-            let setupPyFile = fs.readFileSync(path.join(__dirname, '..', 'setup.py'), 'utf8').replace(/\s|'/g,'');
+            let setupPyFile = fs.readFileSync(packageManagerConfiguration[0], 'utf8').replace(/\s|'/g,'');
             let requirementsIndex = setupPyFile.indexOf('install_requires=', 0);
             let nextOpeningBracket = setupPyFile.indexOf('[', requirementsIndex);
             let nextClosingBracketIndex = setupPyFile.indexOf(']', requirementsIndex);
