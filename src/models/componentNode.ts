@@ -38,7 +38,6 @@ export class ComponentNode extends NodeBase {
             for (let i = 0; i < allDependencies.length; i++) {
                 if (this.component == allDependencies[i].component) {
                     for (let j = 0; j < allDependencies[i].vulnerabilities.length; j++) {
-                        console.log(allDependencies[i].vulnerabilities[j].vulnName)
                         let node = new VulnerabilityNode(allDependencies[i].vulnerabilities[j].vulnSource + "-" + allDependencies[i].vulnerabilities[j].vulnName, "vulnNode", allDependencies[i].vulnerabilities[j].vulnHubLink);
                         vulnerabilityNodes.push(node);
                     }

@@ -200,12 +200,16 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
             };
 
             for (let i = 0; i < vulnerabilities.items.length; i++) {
-                vulnObj.vulnName = vulnerabilities.items[i].vulnerabilityName;
-                vulnObj.vulnSource = vulnerabilities.items[i].source;
-                vulnObj.vulnSeverity = vulnerabilities.items[i].severity;
-                vulnObj.vulnHubLink = vulnerabilities.items[i]._meta.href;
+
+                let vulnObj = {
+                    vulnName: vulnerabilities.items[i].vulnerabilityName,
+                    vulnSource: vulnerabilities.items[i].source,
+                    vulnSeverity: vulnerabilities.items[i].severity,
+                    vulnHubLink: vulnerabilities.items[i]._meta.href,
+                }        
                 vulnerabilitiesArray.push(vulnObj);
             }
+
 
             let d = new Dependency(componentName, componentVersion, vulnerabilitiesArray);
 
