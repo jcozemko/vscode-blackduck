@@ -28,12 +28,6 @@ export class ComponentNode extends NodeBase {
         async getChildren(element: ComponentNode): Promise<VulnerabilityNode[]> {
             const vulnerabilityNodes: VulnerabilityNode[] = [];
             let node: VulnerabilityNode;
-    
-
-            /*
-
-            TODO: If multiple vulnerabilies exist, duplicates will occur.
-            */
 
             for (let i = 0; i < allDependencies.length; i++) {
                 if (this.component == allDependencies[i].component) {
