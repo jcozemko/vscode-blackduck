@@ -28,10 +28,7 @@ export class Dependency {
 
 }
 
-
 export async function findDependencies(hubUrl: string, username: string, password: string, packageManagerConfiguration: any) : Promise<void> {
-
-    console.log("Inside find dep function: ", packageManagerConfiguration[0]);
 
     let fileToParse;
     let apiLanguageConfig: string;
@@ -47,7 +44,6 @@ export async function findDependencies(hubUrl: string, username: string, passwor
             apiLanguageConfig = "rubygems:";
             let GemLockFile = fs.readFileSync(packageManagerConfiguration[0], 'utf8');
             let interpretedGemLockFile = gemfile.interpret(GemLockFile);
-            console.log(interpretedGemLockFile);
             fileToParse = interpretedGemLockFile;
             declaredDependencies = fileToParse.GEM.specs;
             break;
@@ -93,13 +89,8 @@ export async function findDependencies(hubUrl: string, username: string, passwor
     
                     let foundComponent = await searchForComponent(hubUrl, username, password, dependency, version, apiLanguageConfig);
                     count++;
-                    
     
-                    if (foundComponent) {
-                        await allDependencies.push(
-                            foundComponent
-                        )
-                    }       
+                    if (foundComponent) { await allDependencies.push(foundComponent) }       
                         
                     if (count > size - 1 ) {
                         let dependencyTree = new DependencyNodeProvider();
@@ -111,7 +102,6 @@ export async function findDependencies(hubUrl: string, username: string, passwor
             }
 
             parseJson(count, dependenciesFromFile);
-
             
         } catch (error) {
             console.log(error);
@@ -210,6 +200,7 @@ async function getComponentVulnerabilities(versionUrl: string, username: string,
                 vulnerabilitiesArray.push(vulnObj);
             }
 
+            console.log("vuln array", vulnerabilitiesArray);
 
             let d = new Dependency(componentName, componentVersion, vulnerabilitiesArray);
 

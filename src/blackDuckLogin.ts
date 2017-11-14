@@ -16,7 +16,6 @@ export interface Response {
     response: Object;
 }
 
-
 export let loginObject = {
     huburl: <string> null,
     username: <string> null,
